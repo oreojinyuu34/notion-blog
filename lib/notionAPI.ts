@@ -1,8 +1,12 @@
 import { Client } from "@notionhq/client";
+import { NotionToMarkdown } from "notion-to-md";
+
 
 const notion =new Client ({
   auth: process.env.NOTION_TOKEN,
 })
+
+const n2m = new NotionToMarkdown({ notionClient:notion})
 
 export const getAllPosts =async () => {
   const databaseId: string = process.env.NOTION_DATABASE_ID as string;
@@ -57,9 +61,24 @@ export const getSinglePost = async (slug: string) => {
   })
 
   const page = response.results[0]
-  // console.log(page)
+  const metadata = getPageMetaData(page);
+  // console.log(metadata)
+
+  const mdBlocks = await n2m.pageToMarkdown(page.id);
+  const mdString = n2m.toMarkdownString(mdBlocks);
+  // console.log(mdString)
 
   return {
-    page,
+    metadata,
+    markdown: mdString,
   }
+}
+
+
+// Topページ記事に取得
+export const getPostsForTopPage = async (pageSize = 6) => {
+  const allPosts = await getAllPosts();
+  const numberOfPosts = allPosts.slice(0, pageSize)
+  return numberOfPosts;
+
 }
