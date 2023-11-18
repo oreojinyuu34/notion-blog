@@ -27,7 +27,7 @@ export default function Home({ numberOfPosts }: any) {
       <main className="">
         <h1 className="title">blog-title</h1>
         {numberOfPosts.map((post: any) => (
-          <div>
+          <div key={post.id}>
             <SinglePost
               icon={post.icon}
               title={post.title}
@@ -35,6 +35,7 @@ export default function Home({ numberOfPosts }: any) {
               date={post.date}
               tags={post.tags}
               slug={post.slug}
+              isPaginationPage={false}
             />
           </div>
         ))}

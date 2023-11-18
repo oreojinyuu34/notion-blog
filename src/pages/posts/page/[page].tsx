@@ -1,26 +1,43 @@
 import Head from "next/head";
-import { getAllPosts, getPostsForTopPage } from "lib/notionAPI";
+import {
+  getAllPosts,
+  getNumberOfPages,
+  getPostsByPage,
+  getPostsForTopPage,
+} from "lib/notionAPI";
 import SinglePost from "components/Post/SinglePost";
 import { GetStaticPaths, GetStaticProps } from "next";
+import Pagination from "components/Pagination";
 
 export const getStaticPaths: GetStaticPaths = async () => {
+  const numberOfPage = await getNumberOfPages();
+
+  let params = [];
+  for (let i = 1; i <= numberOfPage; i++) {
+    params.push({ params: { page: i.toString() } });
+  }
   return {
-    paths: [{ params: { page: "1" } }, { params: { page: "2" } }],
+    paths: params,
     fallback: "blocking",
   };
 };
 
-export const getStaticProps: GetStaticProps = async () => {
-  const numberOfPosts = await getPostsForTopPage();
+export const getStaticProps: GetStaticProps = async (context) => {
+  const currentPage = context.params?.page?.toString() ?? "1";
+  const postsByPage = await getPostsByPage(
+    parseInt(currentPage.toString(), 10)
+  );
+  const numberOfPage = await getNumberOfPages();
   return {
     props: {
-      numberOfPosts,
+      postsByPage,
+      numberOfPage,
     },
     revalidate: 60,
   };
 };
 
-const BlogPageList = ({ numberOfPosts }: any) => {
+const BlogPageList = ({ postsByPage, numberOfPage }: any) => {
   // console.log(allPosts);
   return (
     <div>
@@ -32,8 +49,8 @@ const BlogPageList = ({ numberOfPosts }: any) => {
       </Head>
       <main className="">
         <h1 className="title">Atsushi-blog🖥</h1>
-        {numberOfPosts.map((post: any) => (
-          <div>
+        {postsByPage.map((post: any) => (
+          <div key={post.id}>
             <SinglePost
               icon={post.icon}
               title={post.title}
@@ -41,9 +58,11 @@ const BlogPageList = ({ numberOfPosts }: any) => {
               date={post.date}
               tags={post.tags}
               slug={post.slug}
+              isPaginationPage={true}
             />
           </div>
         ))}
+        <Pagination numberOfPage={numberOfPage} />
       </main>
     </div>
   );

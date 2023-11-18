@@ -1,4 +1,5 @@
 import { Client } from "@notionhq/client";
+import { NUMBER_OF_POSTS_PER_PAGE } from "constants/constants";
 import { NotionToMarkdown } from "notion-to-md";
 
 
@@ -13,6 +14,18 @@ export const getAllPosts =async () => {
   const posts = await notion.databases.query({
     database_id: databaseId,
     page_size: 100,
+    filter: {
+      property: "Published",
+      checkbox: {
+        equals: true,
+      },
+    },
+    sorts: [
+      {
+      property: "日付",
+      direction: "descending",
+      },
+    ],
   })
 
   const allPosts = posts.results;
@@ -81,4 +94,21 @@ export const getPostsForTopPage = async (pageSize = 6) => {
   const numberOfPosts = allPosts.slice(0, pageSize)
   return numberOfPosts;
 
+}
+
+// ページ番号に応じた記事取得
+export const getPostsByPage = async (page: number) => {
+  const allPosts = await getAllPosts();
+
+  const startIndex = (page - 1) * NUMBER_OF_POSTS_PER_PAGE;
+  const endIndex = startIndex + NUMBER_OF_POSTS_PER_PAGE;
+
+  return allPosts.slice(startIndex, endIndex)
+}
+
+export const getNumberOfPages = async () => {
+  const allPosts = await getAllPosts();
+
+  return Math.floor(allPosts.length / NUMBER_OF_POSTS_PER_PAGE) + (allPosts.length % NUMBER_OF_POSTS_PER_PAGE > 0 ? 1 : 0
+  )
 }

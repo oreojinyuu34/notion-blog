@@ -8,10 +8,12 @@ type Props = {
   date: string;
   tags: string[];
   slug: string;
+  isPaginationPage: boolean;
 };
 
 const SinglePost = (props: Props) => {
-  const { icon, title, description, date, tags, slug } = props;
+  const { icon, title, description, date, tags, slug, isPaginationPage } =
+    props;
   return (
     <section>
       <div>
@@ -21,8 +23,8 @@ const SinglePost = (props: Props) => {
             <h2>{title}</h2>
           </div>
           <div>{date}</div>
-          {tags.map((tag) => (
-            <span>{tag}</span>
+          {tags.map((tag, index: number) => (
+            <span key={index}>{tag}</span>
           ))}
           <p>{description}</p>
         </Link>
